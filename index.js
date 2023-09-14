@@ -10,7 +10,7 @@ const urls = [
 ];
 
 // 创建一个日志文件
-const logFile = 'web-visit-log.txt';
+const logFile = 'visit-log.txt';
 
 // 创建一个函数来访问网页并将结果写入日志
 async function scrapeAndLog(url) {
