@@ -4,8 +4,8 @@ const cron = require('node-cron');
 
 // 定义要访问的网页URL数组
 const urls = [
-  'https://bubble-horse-hippodraco.glitch.me',
-  'https://achieved-vivacious-gallimimus.glitch.me',
+  'https://www.baidu.com',
+  'https://www.google.com',
   // 添加更多的URL
 ];
 
