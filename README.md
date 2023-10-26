@@ -13,5 +13,5 @@
 
 # 适用平台
 * 包括但不限于Glitch，Rendenr，Back4app，clever cloud，Zeabur，codesanbox，replit。。。等等，不支持物理停机的容器。
-* 部署在huggingface上的保活项目https://huggingface.co/spaces/sunxyz/Auto-keep-online，可直接复制我的space，修改index.js中的地址即可。
+* 部署在huggingface上的保活项目https://huggingface.co/spaces/sunxyz/Auto-keep-online 可直接复制我的space，修改index.js中的地址即可。
 
