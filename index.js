@@ -25,7 +25,7 @@ function visitWebsites() {
     'https://www.google.com',        // 此处可备注名称，例如：Back4app
     'https://www.google.com',        // 此处可备注名称，例如：Back4app
     'https://www.google.com',        // 此处可备注名称，例如：Back4app
-    'https://www.google.com'         // 此处可备注名称，例如：Back4app
+    'https://www.google.com'         // 此处可备注名称，例如：Back4app，最后一个url后面没有逗号
     //添加更多的指定时间访问的URL
   ];
 
