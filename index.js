@@ -1,11 +1,10 @@
 const axios = require('axios');
 const http = require('http');
 const fs = require('fs');
-const cron = require('node-cron');
 const moment = require('moment-timezone');
-const currentMoment = moment().tz('Asia/Hong_Kong'); // 定义时区
-const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss'); // 获取设置的时区的当前时间
-const port = process.env.PORT || 7860; //http服务端口
+const cron = require('node-cron');
+const currentMoment = moment().tz('Asia/Hong_Kong'); //设置时区
+const port = process.env.PORT || 7860;
 
 // 添加要24小时访问的网页URL数组
 const urls = [
@@ -34,15 +33,17 @@ function visitWebsites() {
   websites.forEach(async (url) => {
     try {
       const response = await axios.get(url);
-      console.log(`${timestamp}: Visited web successfilly: ${url} - Status: ${response.status}`);
+      const currentMoment = moment().tz('Asia/Hong_Kong');
+      const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
+      console.log(`${formattedTime}：Visited web successfilly：${url} - Status: ${response.status}`);
     } catch (error) {
-      console.error(`${timestamp}: Error visiting ${url}: ${error.message}`);
+      console.error(`${formattedTime}：Error visiting ${url}: ${error.message}`);
     }
   });
 }
 // 每隔两分钟执行一次访问
 const interval = setInterval(() => {
-  // 在5:00至凌晨00:00之间循环访问网页
+  // 在5:00至次日凌晨00:00之间访问网页
   if (currentMoment.hours() >= 5 && currentMoment.hours() <= 23) {
     visitWebsites();
   } else {
@@ -50,7 +51,7 @@ const interval = setInterval(() => {
   }
 }, 2 * 60 * 1000); // 2分钟访问一次,可自行需要修改
 
-// 在5:00时清除定时器，继续执行每2分钟访问一次url
+// 在5:00时清除定时器，继续执行每2分钟访问url数组
 const nextDay = moment().tz('Asia/Hong_Kong').add(1, 'day').hours(5).minutes(0).seconds(0);
 const midnightInterval = nextDay - moment().tz('Asia/Hong_Kong');
 setTimeout(() => {
@@ -59,14 +60,18 @@ setTimeout(() => {
 }, midnightInterval);
 
 
-// 24小时不间断访问网页数组逻辑
+// 24小时不间断访问
 async function scrapeAndLog(url) {
   try {
     const response = await axios.get(url);
+    const currentMoment = moment().tz('Asia/Hong_Kong');
+    const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss');
     const logMessage = `${timestamp}: Web visited Successfully: ${url} - Status: ${response.status}\n`;
+
     console.log(logMessage);
   } catch (error) {
     const errorMessage = `${timestamp}: Web visited Error: ${url}: ${error.message}\n`;
+
     console.error(errorMessage);
   }
 }
