@@ -76,7 +76,7 @@ async function scrapeAndLog(url) {
 }
 // 使用cron来安排定期任务
 cron.schedule('*/2 * * * *', () => {
-  console.log('Running webpage access...');
+ // console.log('Running webpage access...');
   // 循环访问每个URL
   urls.forEach((url) => {
     scrapeAndLog(url);
