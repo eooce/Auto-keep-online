@@ -1,6 +1,5 @@
 const axios = require('axios');
 const http = require('http');
-const fs = require('fs');
 const moment = require('moment-timezone');
 const cron = require('node-cron');
 const currentMoment = moment().tz('Asia/Hong_Kong'); //设置时区
