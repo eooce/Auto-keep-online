@@ -1,39 +1,75 @@
 const axios = require('axios');
+const http = require('http');
 const fs = require('fs');
+const moment = require('moment-timezone');
 const cron = require('node-cron');
+const port = process.env.PORT || 7860;
 
-// 定义要访问的网页URL数组
+// 添加要24小时访问的网页URL数组
 const urls = [
   'https://www.baidu.com',
-  'https://www.google.com',
+  'https://www.yahoo.com',
   // 添加更多的URL
 ];
 
-// 创建一个日志文件
-const logFile = 'visit-log.txt';
+// 添加在00:00至05:00暂停访问，其他时间正常访问的URL数组
+function visitWebsites() {
+  const websites = [
+    'https://www.google.com',
+    'https://djfhjapp-41j1aaoh.b4a.run'
+    //添加更多的URL
+  ];
 
-// 创建一个函数来访问网页并将结果写入日志
+  // 遍历网页数组并发发送请求访问，00:00至5:00暂停访问
+  websites.forEach(async (url) => {
+    try {
+      const response = await axios.get(url);
+      const currentMoment = moment().tz('Asia/Hong_Kong');
+      const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
+      console.log(`${formattedTime}  Visited web successfilly：${url} - Status: ${response.status}`);
+    } catch (error) {
+      console.error(`${formattedTime}  Error visiting ${url}: ${error.message}`);
+    }
+  });
+}
+// 每隔两分钟执行一次访问
+const interval = setInterval(() => {
+  const currentMoment = moment().tz('Asia/Hong_Kong');
+
+  // 在5:00至00:00之间访问网页
+  if (currentMoment.hours() >= 5 && currentMoment.hours() <= 23) {
+    visitWebsites();
+  } else {
+    console.log('Stop visit web between 00:00 and 5:00');
+  }
+}, 2 * 60 * 1000); // 2分钟访问一次,可自行需要修改
+
+// 在5:00时清除定时器，暂停访问
+const nextDay = moment().tz('Asia/Hong_Kong').add(1, 'day').hours(5).minutes(0).seconds(0);
+const midnightInterval = nextDay - moment().tz('Asia/Hong_Kong');
+setTimeout(() => {
+  clearInterval(interval);
+  console.log('Script paused until 5:00');
+}, midnightInterval);
+
+
+// 24小时不间断访问网页逻辑
 async function scrapeAndLog(url) {
   try {
     const response = await axios.get(url);
-    const timestamp = new Date().toISOString();
+    const currentMoment = moment().tz('Asia/Hong_Kong');
+    const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss');
     const logMessage = `${timestamp}: Web visited Successfully ${url}\n`;
-
-    // 将访问结果写入日志文件
-    fs.appendFileSync(logFile, logMessage);
 
     console.log(logMessage);
   } catch (error) {
-    const timestamp = new Date().toISOString();
+    const currentMoment = moment().tz('Asia/Hong_Kong');
+    const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss');
     const errorMessage = `${timestamp}: Web visited Error ${url}: ${error.message}\n`;
-
-    // 将错误信息写入日志文件
-    fs.appendFileSync(logFile, errorMessage);
 
     console.error(errorMessage);
   }
 }
-
 // 使用cron来安排定期任务
 cron.schedule('*/2 * * * *', () => {
   console.log('Running webpage access...');
@@ -41,4 +77,19 @@ cron.schedule('*/2 * * * *', () => {
   urls.forEach((url) => {
     scrapeAndLog(url);
   });
+});
+
+// 创建HTTP服务
+const server = http.createServer((req, res) => {
+  if (req.url === '/') {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end('Hello, World!\n');
+  } else {
+    res.writeHead(404, {'Content-Type': 'text/plain'});
+    res.end('Not Found\n');
+  }
+});
+
+server.listen(port, () => {
+  console.log(`Server is running on port:${port}`);
 });
