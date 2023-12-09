@@ -5,7 +5,7 @@ const cron = require('node-cron');
 const currentMoment = moment().tz('Asia/Hong_Kong'); //设置时区
 const port = process.env.PORT || 7860;
 
-// 添加要24小时访问的网页URL数组
+// 添加24小时访问的URL数组
 const urls = [
   'https://www.baidu.com',             // 此处可备注名称，例如：glitch
   'https://www.yahoo.com',             // 此处可备注名称，例如：glitch
