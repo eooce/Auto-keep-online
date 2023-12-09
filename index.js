@@ -4,7 +4,8 @@ const fs = require('fs');
 const cron = require('node-cron');
 const moment = require('moment-timezone');
 const currentMoment = moment().tz('Asia/Hong_Kong'); // 定义时区
-const port = process.env.PORT || 7860;
+const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss'); // 获取设置的时区的当前时间
+const port = process.env.PORT || 7860; //http服务端口
 
 // 添加要24小时访问的网页URL数组
 const urls = [
@@ -33,10 +34,9 @@ function visitWebsites() {
   websites.forEach(async (url) => {
     try {
       const response = await axios.get(url);
-      const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
-      console.log(`${formattedTime}  Visited web successfilly：${url} - Status: ${response.status}`);
+      console.log(`${timestamp}: Visited web successfilly：${url} - Status: ${response.status}`);
     } catch (error) {
-      console.error(`${formattedTime}  Error visiting ${url}: ${error.message}`);
+      console.error(`${timestamp}: Error visiting ${url}: ${error.message}`);
     }
   });
 }
@@ -63,14 +63,10 @@ setTimeout(() => {
 async function scrapeAndLog(url) {
   try {
     const response = await axios.get(url);
-    const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss');
     const logMessage = `${timestamp}: Web visited Successfully ${url}\n`;
-
     console.log(logMessage);
   } catch (error) {
-    const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss');
     const errorMessage = `${timestamp}: Web visited Error ${url}: ${error.message}\n`;
-
     console.error(errorMessage);
   }
 }
