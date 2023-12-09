@@ -1,30 +1,38 @@
 const axios = require('axios');
 const http = require('http');
 const fs = require('fs');
-const moment = require('moment-timezone');
 const cron = require('node-cron');
+const moment = require('moment-timezone');
+const currentMoment = moment().tz('Asia/Hong_Kong'); // 定义时区
 const port = process.env.PORT || 7860;
 
 // 添加要24小时访问的网页URL数组
 const urls = [
-  'https://www.baidu.com',
-  'https://www.yahoo.com',
-  // 添加更多的URL
+  'https://www.baidu.com',             // 此处可备注名称，例如：glitch
+  'https://www.yahoo.com',             // 此处可备注名称，例如：glitch
+  'https://www.baidu.com',             // 此处可备注名称，例如：glitch
+  'https://www.yahoo.com',             // 此处可备注名称，例如：glitch
+  'https://www.baidu.com',             // 此处可备注名称，例如：glitch
+  'https://www.yahoo.com',             // 此处可备注名称，例如：glitch
+  'https://www.baidu.com',             // 此处可备注名称，例如：glitch
+  'https://www.yahoo.com',             // 此处可备注名称，例如：glitch
+  // 添加更多24小时不间断访问的URL
 ];
 
 // 添加在00:00至05:00暂停访问，其他时间正常访问的URL数组
 function visitWebsites() {
   const websites = [
-    'https://www.google.com',
-    'https://djfhjapp-41j1aaoh.b4a.run'
-    //添加更多的URL
+    'https://www.google.com',        // 此处可备注名称，例如：Back4app
+    'https://www.google.com',        // 此处可备注名称，例如：Back4app
+    'https://www.google.com',        // 此处可备注名称，例如：Back4app
+    'https://www.google.com'         // 此处可备注名称，例如：Back4app
+    //添加更多的指定时间访问的URL
   ];
 
   // 遍历网页数组并发发送请求访问，00:00至5:00暂停访问
   websites.forEach(async (url) => {
     try {
       const response = await axios.get(url);
-      const currentMoment = moment().tz('Asia/Hong_Kong');
       const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
       console.log(`${formattedTime}  Visited web successfilly：${url} - Status: ${response.status}`);
     } catch (error) {
@@ -34,7 +42,6 @@ function visitWebsites() {
 }
 // 每隔两分钟执行一次访问
 const interval = setInterval(() => {
-  const currentMoment = moment().tz('Asia/Hong_Kong');
 
   // 在5:00至00:00之间访问网页
   if (currentMoment.hours() >= 5 && currentMoment.hours() <= 23) {
@@ -44,7 +51,7 @@ const interval = setInterval(() => {
   }
 }, 2 * 60 * 1000); // 2分钟访问一次,可自行需要修改
 
-// 在5:00时清除定时器，暂停访问
+// 在5:00时清除定时器，继续执行访问
 const nextDay = moment().tz('Asia/Hong_Kong').add(1, 'day').hours(5).minutes(0).seconds(0);
 const midnightInterval = nextDay - moment().tz('Asia/Hong_Kong');
 setTimeout(() => {
@@ -53,17 +60,15 @@ setTimeout(() => {
 }, midnightInterval);
 
 
-// 24小时不间断访问网页逻辑
+// 24小时不间断访问网页数组逻辑
 async function scrapeAndLog(url) {
   try {
     const response = await axios.get(url);
-    const currentMoment = moment().tz('Asia/Hong_Kong');
     const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss');
     const logMessage = `${timestamp}: Web visited Successfully ${url}\n`;
 
     console.log(logMessage);
   } catch (error) {
-    const currentMoment = moment().tz('Asia/Hong_Kong');
     const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss');
     const errorMessage = `${timestamp}: Web visited Error ${url}: ${error.message}\n`;
 
