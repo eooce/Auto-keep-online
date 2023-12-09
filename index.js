@@ -57,16 +57,14 @@ function checkAndClearTimer() {
 }
 // 设置初始定时器
 checkAndClearTimer();
-// 每隔两分钟执行一次访问
 const interval = setInterval(() => {
   const currentMoment = moment().tz('Asia/Hong_Kong');
   // 在5:00至23:00之间访问网页
   if (isWithinTimeRange(currentMoment, 5, 23)) {
     visitWebsites();
   }
-  // 在00:00至5:00之间检查是否需要清除定时器
   checkAndClearTimer();
-}, 2 * 60 * 1000); // 2分钟检查一次
+}, 2 * 60 * 1000); // 2分钟检查一次，每隔两分钟执行一次访问
 
 
 // 24小时不间断访问
