@@ -42,7 +42,6 @@ function visitWebsites() {
 }
 // 每隔两分钟执行一次访问
 const interval = setInterval(() => {
-
   // 在5:00至00:00之间访问网页
   if (currentMoment.hours() >= 5 && currentMoment.hours() <= 23) {
     visitWebsites();
@@ -51,7 +50,7 @@ const interval = setInterval(() => {
   }
 }, 2 * 60 * 1000); // 2分钟访问一次,可自行需要修改
 
-// 在5:00时清除定时器，继续执行访问
+// 在5:00时清除定时器，继续执行每2分钟访问一次url
 const nextDay = moment().tz('Asia/Hong_Kong').add(1, 'day').hours(5).minutes(0).seconds(0);
 const midnightInterval = nextDay - moment().tz('Asia/Hong_Kong');
 setTimeout(() => {
