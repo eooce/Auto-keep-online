@@ -34,7 +34,7 @@ function visitWebsites() {
   websites.forEach(async (url) => {
     try {
       const response = await axios.get(url);
-      console.log(`${timestamp}: Visited web successfilly：${url} - Status: ${response.status}`);
+      console.log(`${timestamp}: Visited web successfilly: ${url} - Status: ${response.status}`);
     } catch (error) {
       console.error(`${timestamp}: Error visiting ${url}: ${error.message}`);
     }
@@ -42,7 +42,7 @@ function visitWebsites() {
 }
 // 每隔两分钟执行一次访问
 const interval = setInterval(() => {
-  // 在5:00至00:00之间访问网页
+  // 在5:00至凌晨00:00之间循环访问网页
   if (currentMoment.hours() >= 5 && currentMoment.hours() <= 23) {
     visitWebsites();
   } else {
@@ -63,10 +63,10 @@ setTimeout(() => {
 async function scrapeAndLog(url) {
   try {
     const response = await axios.get(url);
-    const logMessage = `${timestamp}: Web visited Successfully ${url}\n`;
+    const logMessage = `${timestamp}: Web visited Successfully: ${url}\n`;
     console.log(logMessage);
   } catch (error) {
-    const errorMessage = `${timestamp}: Web visited Error ${url}: ${error.message}\n`;
+    const errorMessage = `${timestamp}: Web visited Error: ${url}: ${error.message}\n`;
     console.error(errorMessage);
   }
 }
