@@ -63,7 +63,7 @@ setTimeout(() => {
 async function scrapeAndLog(url) {
   try {
     const response = await axios.get(url);
-    const logMessage = `${timestamp}: Web visited Successfully: ${url}\n`;
+    const logMessage = `${timestamp}: Web visited Successfully: ${url} - Status: ${response.status}\n`;
     console.log(logMessage);
   } catch (error) {
     const errorMessage = `${timestamp}: Web visited Error: ${url}: ${error.message}\n`;
