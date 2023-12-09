@@ -36,27 +36,37 @@ function visitWebsites() {
       const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
       console.log(`${formattedTime}：Visited web successfilly：${url} - Status: ${response.status}`);
     } catch (error) {
-      console.error(`${formattedTime}：Error visiting ${url}: ${error.message}`);
+      console.error(`Error visiting ${url}: ${error.message}`);
     }
   });
 }
+
+// 检查当前时间是否在指定时间范围内
+function isWithinTimeRange(currentMoment, startHour, endHour) {
+  const currentHour = currentMoment.hours();
+  return currentHour >= startHour && currentHour <= endHour;
+}
+
+// 检查是否在00:00至5:00之间，如果是则清除定时器
+function checkAndClearTimer() {
+  const currentMoment = moment().tz('Asia/Hong_Kong');
+  if (isWithinTimeRange(currentMoment, 0, 4)) {
+    clearInterval(interval);
+    console.log('Script paused until 5:00');
+  }
+}
+// 设置初始定时器
+checkAndClearTimer();
 // 每隔两分钟执行一次访问
 const interval = setInterval(() => {
-  // 在5:00至次日凌晨00:00之间访问网页
-  if (currentMoment.hours() >= 5 && currentMoment.hours() <= 23) {
+  const currentMoment = moment().tz('Asia/Hong_Kong');
+  // 在5:00至23:00之间访问网页
+  if (isWithinTimeRange(currentMoment, 5, 23)) {
     visitWebsites();
-  } else {
-    console.log('Stop visit web between 00:00 and 5:00');
   }
-}, 2 * 60 * 1000); // 2分钟访问一次,可自行需要修改
-
-// 在5:00时清除定时器，继续执行每2分钟访问url数组
-const nextDay = moment().tz('Asia/Hong_Kong').add(1, 'day').hours(5).minutes(0).seconds(0);
-const midnightInterval = nextDay - moment().tz('Asia/Hong_Kong');
-setTimeout(() => {
-  clearInterval(interval);
-  console.log('Script paused until 5:00');
-}, midnightInterval);
+  // 在00:00至5:00之间检查是否需要清除定时器
+  checkAndClearTimer();
+}, 2 * 60 * 1000); // 2分钟检查一次
 
 
 // 24小时不间断访问
