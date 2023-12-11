@@ -2,7 +2,6 @@ const axios = require('axios');
 const http = require('http');
 const moment = require('moment-timezone');
 const cron = require('node-cron');
-const currentMoment = moment().tz('Asia/Hong_Kong'); //设置时区
 const port = process.env.PORT || 7860;
 
 // 添加24小时访问的URL数组
@@ -28,44 +27,45 @@ function visitWebsites() {
     //添加更多的指定时间访问的URL
   ];
 
-  // 遍历网页数组并发发送请求访问，00:00至5:00暂停访问
+  // 遍历网页数组并发送请求
   websites.forEach(async (url) => {
     try {
       const response = await axios.get(url);
       const currentMoment = moment().tz('Asia/Hong_Kong');
       const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
-      console.log(`${formattedTime}：Visited web successfilly：${url} - Status: ${response.status}`);
+
+      console.log(`${formattedTime}: Visited web successfully ${url} - Status: ${response.status}\n`);
     } catch (error) {
-      console.error(`Error visiting ${url}: ${error.message}`);
+      console.error(`Error visiting: ${url}: ${error.message}\n`);
     }
   });
 }
 
-// 检查当前时间是否在指定时间范围内
-function isWithinTimeRange(currentMoment, startHour, endHour) {
-  const currentHour = currentMoment.hours();
-  return currentHour >= startHour && currentHour <= endHour;
-}
-
-// 检查是否在00:00至5:00之间，如果是则清除定时器
-function checkAndClearTimer() {
+  // 在1:00至5:00之间，暂停访问并设置定时器在5:00时重新开始
+function checkAndSetTimer() {
   const currentMoment = moment().tz('Asia/Hong_Kong');
-  if (isWithinTimeRange(currentMoment, 0, 4)) {
-    clearInterval(interval);
-    console.log('Script paused until 5:00');
+  if (currentMoment.hours() >= 1 && currentMoment.hours() < 5) {
+    console.log('Stop visit from 1:00 to 5:00');
+    clearInterval(visitIntervalId); // 清除定时器
+    const nextVisitTime = moment().tz('Asia/Hong_Kong').hours(5).minutes(0).seconds(0);
+    const nextVisitInterval = nextVisitTime - moment().tz('Asia/Hong_Kong');
+    setTimeout(() => {
+      startVisits();
+    }, nextVisitInterval);
+  } else {
+    startVisits();
   }
 }
-// 设置初始定时器
-checkAndClearTimer();
-const interval = setInterval(() => {
-  const currentMoment = moment().tz('Asia/Hong_Kong');
-  // 在5:00至23:00之间访问网页
-  if (isWithinTimeRange(currentMoment, 5, 23)) {
+
+let visitIntervalId;
+function startVisits() {
+  clearInterval(visitIntervalId);
+  visitWebsites();
+  visitIntervalId = setInterval(() => {
     visitWebsites();
-  }
-  checkAndClearTimer();
-}, 2 * 60 * 1000); // 2分钟检查一次，每隔两分钟执行一次访问
-
+  }, 2 * 60 * 1000); // 1:00至5:00暂停，其他时间每2分钟执行一次访问，可自行设置
+}
+checkAndSetTimer();
 
 // 24小时不间断访问
 async function scrapeAndLog(url) {
