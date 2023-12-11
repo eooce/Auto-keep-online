@@ -41,7 +41,7 @@ function visitWebsites() {
   });
 }
 
-  // 在1:00至5:00之间，暂停访问并设置定时器在5:00时重新开始
+// 在1:00至5:00之间，暂停访问并设置定时器在5:00时重新开始
 function checkAndSetTimer() {
   const currentMoment = moment().tz('Asia/Hong_Kong');
   if (currentMoment.hours() >= 1 && currentMoment.hours() < 5) {
