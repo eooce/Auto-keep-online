@@ -17,7 +17,7 @@ const urls = [
   // 添加更多24小时不间断访问的URL
 ];
 
-// 添加在00:00至05:00暂停访问，其他时间正常访问的URL数组
+// 添加在01:00至05:00暂停访问，其他时间正常访问的URL数组
 function visitWebsites() {
   const websites = [
     'https://www.google.com',        // 此处可备注名称，例如：Back4app
@@ -27,28 +27,27 @@ function visitWebsites() {
     //添加更多的指定时间访问的URL
   ];
 
-  // 遍历网页数组并发送请求
+  // 遍历网页数组并发送访问请求
   websites.forEach(async (url) => {
     try {
       const response = await axios.get(url);
       const currentMoment = moment().tz('Asia/Hong_Kong');
       const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
-
-      console.log(`${formattedTime}: Visited web successfully ${url} - Status: ${response.status}\n`);
+      console.log(`${formattedTime}: Visited web successfully: ${url} - Status: ${response.status}\n`);
     } catch (error) {
-      console.error(`Error visiting: ${url}: ${error.message}\n`);
+      console.error(`Error visiting ${url}: ${error.message}\n`);
     }
   });
 }
 
-// 在1:00至5:00之间，暂停访问并设置定时器在5:00时重新开始
+// 检查并设置定时器
 function checkAndSetTimer() {
   const currentMoment = moment().tz('Asia/Hong_Kong');
   if (currentMoment.hours() >= 1 && currentMoment.hours() < 5) {
     console.log('Stop visit from 1:00 to 5:00');
     clearInterval(visitIntervalId); // 清除定时器
-    const nextVisitTime = moment().tz('Asia/Hong_Kong').hours(5).minutes(0).seconds(0);
-    const nextVisitInterval = nextVisitTime - moment().tz('Asia/Hong_Kong');
+    const nextVisitTime = moment().tz('Asia/Hong_Kong').add(0, 'day').hours(5).minutes(0).seconds(0);
+    const nextVisitInterval = nextVisitTime.diff(currentMoment);
     setTimeout(() => {
       startVisits();
     }, nextVisitInterval);
@@ -56,16 +55,22 @@ function checkAndSetTimer() {
     startVisits();
   }
 }
-
-let visitIntervalId;
+let visitIntervalId; 
 function startVisits() {
   clearInterval(visitIntervalId);
   visitWebsites();
   visitIntervalId = setInterval(() => {
     visitWebsites();
-  }, 2 * 60 * 1000); // 1:00至5:00暂停，其他时间每2分钟执行一次访问，可自行设置
+  }, 2 * 60 * 1000);   // 每2分钟执行一次访问
+}
+function runScript() {
+  const runScriptIntervalId = setInterval(() => {
+    //console.log('Running script');
+    checkAndSetTimer();
+  }, 2 * 60 * 1000); // 每2分钟检查一次
 }
 checkAndSetTimer();
+runScript();
 
 // 24小时不间断访问
 async function scrapeAndLog(url) {
