@@ -1,8 +1,10 @@
 const axios = require('axios');
 const http = require('http');
-const moment = require('moment-timezone');
 const cron = require('node-cron');
-const port = process.env.PORT || 7860;
+const port = process.env.PORT || 7860;     
+const moment = require('moment-timezone');
+const currentMoment = moment().tz('Asia/Hong_Kong');
+const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
 
 // 添加24小时访问的URL数组
 const urls = [
@@ -27,13 +29,11 @@ function visitWebsites() {
     //添加更多的指定时间访问的URL
   ];
 
-  // 遍历网页数组并发送访问请求
+ // 遍历网页数组并发送请求
   websites.forEach(async (url) => {
     try {
       const response = await axios.get(url);
-      const currentMoment = moment().tz('Asia/Hong_Kong');
-      const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
-      console.log(`${formattedTime}: Visited web successfully: ${url} - Status: ${response.status}\n`);
+      console.log(`${formattedTime} Visited web successfully: ${url} - Status: ${response.status}\n`);
     } catch (error) {
       console.error(`Error visiting ${url}: ${error.message}\n`);
     }
@@ -42,7 +42,6 @@ function visitWebsites() {
 
 // 检查并设置定时器
 function checkAndSetTimer() {
-  const currentMoment = moment().tz('Asia/Hong_Kong');
   if (currentMoment.hours() >= 1 && currentMoment.hours() < 5) {
     console.log('Stop visit from 1:00 to 5:00');
     clearInterval(visitIntervalId); // 清除定时器
@@ -55,14 +54,16 @@ function checkAndSetTimer() {
     startVisits();
   }
 }
+
 let visitIntervalId; 
 function startVisits() {
   clearInterval(visitIntervalId);
-  visitWebsites();
+// visitWebsites();
   visitIntervalId = setInterval(() => {
     visitWebsites();
   }, 2 * 60 * 1000);   // 每2分钟执行一次访问
 }
+
 function runScript() {
   const runScriptIntervalId = setInterval(() => {
     //console.log('Running script');
@@ -76,21 +77,14 @@ runScript();
 async function scrapeAndLog(url) {
   try {
     const response = await axios.get(url);
-    const currentMoment = moment().tz('Asia/Hong_Kong');
-    const timestamp = currentMoment.format('YYYY-MM-DD HH:mm:ss');
-    const logMessage = `${timestamp}: Web visited Successfully: ${url} - Status: ${response.status}\n`;
-
-    console.log(logMessage);
+    console.log(`${formattedTime} Web visited Successfully: ${url} - Status: ${response.status}\n`);
   } catch (error) {
-    const errorMessage = `${timestamp}: Web visited Error: ${url}: ${error.message}\n`;
-
-    console.error(errorMessage);
+    console.error(`${formattedTime}: Web visited Error: ${url}: ${error.message}\n`);
   }
 }
-// 使用cron来安排定期任务
+// 每2分钟访问一次
 cron.schedule('*/2 * * * *', () => {
   console.log('Running webpage access...');
-  // 循环访问每个URL
   urls.forEach((url) => {
     scrapeAndLog(url);
   });
