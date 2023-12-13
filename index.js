@@ -33,7 +33,7 @@ function visitWebsites() {
   websites.forEach(async (url) => {
     try {
       const response = await axios.get(url);
-      console.log(`${formattedTime} Visited web successfully: ${url} - Status: ${response.status}\n`);
+      console.log(`${moment().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss')} Visited web successfully: ${url} - Status code: ${response.status}\n`);
     } catch (error) {
       console.error(`Error visiting ${url}: ${error.message}\n`);
     }
@@ -43,7 +43,7 @@ function visitWebsites() {
 // 检查并设置定时器
 function checkAndSetTimer() {
   if (currentMoment.hours() >= 1 && currentMoment.hours() < 5) {
-    console.log('Stop visit from 1:00 to 5:00');
+    console.log(`Stop visit from 1:00 to 5:00 --- ${moment().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss')}`);
     clearInterval(visitIntervalId); // 清除定时器
     const nextVisitTime = moment().tz('Asia/Hong_Kong').add(0, 'day').hours(5).minutes(0).seconds(0);
     const nextVisitInterval = nextVisitTime.diff(currentMoment);
@@ -77,9 +77,9 @@ runScript();
 async function scrapeAndLog(url) {
   try {
     const response = await axios.get(url);
-    console.log(`${formattedTime} Web visited Successfully: ${url} - Status: ${response.status}\n`);
+    console.log(`${moment().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss')} Web visited Successfully: ${url} - Status code: ${response.status}\n`);
   } catch (error) {
-    console.error(`${formattedTime}: Web visited Error: ${url}: ${error.message}\n`);
+    console.error(`${moment().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss')}: Web visited Error: ${url}: ${error.message}\n`);
   }
 }
 // 每2分钟访问一次
