@@ -3,8 +3,6 @@ const http = require('http');
 const cron = require('node-cron');
 const port = process.env.PORT || 7860;     
 const moment = require('moment-timezone');
-const currentMoment = moment().tz('Asia/Hong_Kong');
-const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
 
 // 添加24小时访问的URL数组
 const urls = [
@@ -42,6 +40,8 @@ function visitWebsites() {
 
 // 检查并设置定时器
 function checkAndSetTimer() {
+  const currentMoment = moment().tz('Asia/Hong_Kong');
+  const formattedTime = currentMoment.format('YYYY-MM-DD HH:mm:ss');
   if (currentMoment.hours() >= 1 && currentMoment.hours() < 5) {
     console.log(`Stop visit from 1:00 to 5:00 --- ${moment().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss')}`);
     clearInterval(visitIntervalId); // 清除定时器
