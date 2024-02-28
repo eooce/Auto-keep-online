@@ -9,9 +9,9 @@
 
 3：index.js中第9至16行中的网址是24小时不间断访问的url，多个往下继续增加，不限数量；86行为访问周期，默认2分钟,可根据需求自行设置。
 
-4：index.js中的第23至26行为凌晨1点至5点暂停访问，其他时间正常访问的url，64行为访问周期，默认为2分钟，可根据需求自行设置。
+4：index.js中的第23至26行为凌晨1点至6点暂停访问，其他时间正常访问的url，64行为访问周期，默认为2分钟，可根据需求自行设置。
 
 # 适用平台
 * 包括但不限于Glitch，Rendenr，Back4app，clever cloud，Zeabur，codesanbox，replit。。。等等，不支持物理停机的容器。
-* 部署在huggingface上的保活项目https://huggingface.co/spaces/xyzsun/Auto-keep-online 可直接复制我的space，修改index.js中的地址即可。
+* 部署在huggingface上的保活项目https://rides-keep-alive.hf.space 可直接复制我的space，修改index.js中的地址即可。
 
