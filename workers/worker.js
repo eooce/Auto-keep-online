@@ -1,25 +1,43 @@
-// 此js为cloudflared workers使用，复制整个代码到新建的workers里，修改需要访问的链接部署
+// 此js为cloudflared workers使用，复制整个代码到新建的workers里，修改需要访问的链接或部署后添加环境变量
 // 在设置---触发事件 里设置访问频率，例如2分钟，保存即可，可开启日志查看，检查是否运行
 
 // Telegram配置(不需要可忽略)
-const TG_ID = '';           // 替换为你的Telegram用户ID
-const TG_TOKEN = '';        // 替换为你的Telegram Bot的Token
+const TG_ID = '';           // 替换为你的Telegram用户chat_id
+const TG_TOKEN = '';        // 替换为你的Telegram Bot的token
 
-// 24小时不间断访问的URL数组
-const urls = [            
-  'https://www.google.com',    
-  'https://www.google.com',  
-  'https://www.google.com' // 最后一个链接没有逗号  
+// 24小时不间断访问的URL数组,可添加环境变量，环境变量格式：URL_1 URL_2 URL_3...
+const defaultUrls = [            
+  'https://www.google.com',             
+  'https://www.google.com',
+  'https://www.google.com'  // 可添加多个URL，每个URL之间用英文逗号分隔,最后一个URL后不要加逗号
 ];
 
-// 指定时间段访问的URL数组
-const websites = [
-  'https://www.baidu.com', 
-  'https://www.baidu.com' // 最后一个链接没有逗号  
+// 指定时间段访问的URL数组,可添加环境变量，环境变量格式：WEBSITE_1 WEBSITE_2 WEBSITE_3...
+const defaultWebsites = [
+  'https://www.baidu.com',
+  'https://www.baidu.com',
+  'https://www.baidu.com'  // 可添加多个URL，每个URL之间用英文逗号分隔,最后一个URL后不要加逗号
+  // ... 添加更多URL
 ];
 
+// 从环境变量获取URL数组
+function getUrlsFromEnv(prefix) {
+  const envUrls = [];
+  let index = 1;
+  while (true) {
+    const url = globalThis[`${prefix}${index}`];
+    if (!url) break;
+    envUrls.push(url);
+    index++;
+  }
+  return envUrls;
+}
 
-// 检查是否在暂停时间内 (1:00-5:00),可自定义时间段
+// 读取默认URL和环境变量中的URL
+const urls = [...defaultUrls, ...getUrlsFromEnv('URL_')];
+const websites = [...defaultWebsites, ...getUrlsFromEnv('WEBSITE_')];
+
+// 检查是否在暂停时间内 (1:00-5:00)
 function isInPauseTime(hour) {
   return hour >= 1 && hour < 5;
 }
@@ -71,8 +89,8 @@ function getRandomUserAgent() {
 
 async function axiosLikeRequest(url, index, retryCount = 0) {
   try {
-    // 随机延迟 3-8 秒
-    await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 5000));
+    // 随机延迟 1-6 秒
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 5000));
     
     const config = {
       method: 'get',
@@ -108,13 +126,19 @@ async function axiosLikeRequest(url, index, retryCount = 0) {
 
     clearTimeout(timeoutId);
     const status = response.status;
+    const timestamp = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' });
+    
+    if (status !== 200) {
+      // 非200状态码发送通知
+      await sendToTelegram(`保活日志：${timestamp}\n访问失败: ${url}\n状态码: ${status}`);
+    }
     
     return {
       index,
       url,
       status,
       success: status === 200,
-      timestamp: new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' })
+      timestamp
     };
     
   } catch (error) {
@@ -123,14 +147,16 @@ async function axiosLikeRequest(url, index, retryCount = 0) {
       await new Promise(resolve => setTimeout(resolve, 10000));
       return axiosLikeRequest(url, index, retryCount + 1);
     }
-    console.error(`访问出错: ${url}\n错误信息: ${error.message}`);
-    await sendToTelegram(`保活日志\n\n访问出错: ${url}\n错误信息: ${error.message}`);
+    const timestamp = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' });
+    // 发送错误通知
+    await sendToTelegram(`保活日志：${timestamp}\n访问出错: ${url}\n错误信息: ${error.message}`);
+    console.error(`${timestamp} 访问失败: ${url} 状态码: 500`);
     return {
       index,
       url,
       status: 500,
       success: false,
-      timestamp: new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' })
+      timestamp
     };
   }
 }
@@ -147,9 +173,7 @@ async function handleScheduled() {
     if (result.success) {
       console.log(`${result.timestamp} 访问成功: ${result.url}`);
     } else {
-      const errorMessage = `保活日志\n访问失败: ${result.url}\n状态码: ${result.status}`;
-      console.error(errorMessage);
-      sendToTelegram(errorMessage);
+      console.error(`${result.timestamp} 访问失败: ${result.url} 状态码: ${result.status}`);
     }
   });
 
@@ -161,9 +185,7 @@ async function handleScheduled() {
       if (result.success) {
         console.log(`${result.timestamp} 访问成功: ${result.url}`);
       } else {
-        const errorMessage = `保活日志\n访问失败: ${result.url}\n状态码: ${result.status}`;
-        console.error(errorMessage);
-        sendToTelegram(errorMessage);
+        console.error(`${result.timestamp} 访问失败: ${result.url} 状态码: ${result.status}`);
       }
     });
   } else {
