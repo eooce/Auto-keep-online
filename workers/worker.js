@@ -12,7 +12,7 @@ const defaultUrls = [
   'https://www.google.com'  // 可添加多个URL，每个URL之间用英文逗号分隔,最后一个URL后不要加逗号
 ];
 
-// 指定时间段访问的URL数组,可添加环境变量，环境变量名格式：WEBSITE_1 WEBSITE_2 WEBSITE_3...
+// 指定时间段(1:00～5:00)访问的URL数组,可添加环境变量，环境变量名格式：WEBSITE_1 WEBSITE_2 WEBSITE_3...
 const defaultWebsites = [
   'https://www.baidu.com',
   'https://www.baidu.com',
