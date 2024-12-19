@@ -7,20 +7,19 @@ const TG_TOKEN = '';        // 替换为你的Telegram Bot的Token
 
 // 24小时不间断访问的URL数组
 const urls = [            
-  'https://www.google.com',   
+  'https://www.google.com',    
   'https://www.google.com',  
-  'https://www.google.com',  
-  'https://www.google.com',  
-  'https://www.google.com'  
+  'https://www.google.com' // 最后一个链接没有逗号  
 ];
 
-// 指定时间访问的URL数组
+// 指定时间段访问的URL数组
 const websites = [
   'https://www.baidu.com', 
-  'https://www.baidu.com'   
+  'https://www.baidu.com' // 最后一个链接没有逗号  
 ];
 
-// 检查是否在暂停时间内 (1:00-5:00)
+
+// 检查是否在暂停时间内 (1:00-5:00),可自定义时间段
 function isInPauseTime(hour) {
   return hour >= 1 && hour < 5;
 }
@@ -48,30 +47,91 @@ async function sendToTelegram(message) {
   }
 }
 
-async function visitUrl(url) {
+// 生成随机IP
+function getRandomIP() {
+  return `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+}
+
+// 生成随机版本号
+function getRandomVersion() {
+  const chromeVersion = Math.floor(Math.random() * (131 - 100 + 1)) + 100;
+  return chromeVersion;
+}
+
+// 获取随机 User-Agent
+function getRandomUserAgent() {
+  const agents = [
+    `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${getRandomVersion()}.0.0.0 Safari/537.36`,
+    `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${getRandomVersion()}.0.0.0 Safari/537.36`,
+    `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/${getRandomVersion()}.0.0.0`,
+    `Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1`
+  ];
+  return agents[Math.floor(Math.random() * agents.length)];
+}
+
+async function axiosLikeRequest(url, index, retryCount = 0) {
   try {
-    const response = await fetch(url, {
+    // 随机延迟 3-8 秒
+    await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 5000));
+    
+    const config = {
+      method: 'get',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8'
-      }
+        'User-Agent': getRandomUserAgent(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+        'X-Forwarded-For': getRandomIP(),
+        'X-Real-IP': getRandomIP(),
+        'Origin': 'https://glitch.com',
+        'Referer': 'https://glitch.com/'
+      },
+      redirect: 'follow',
+      timeout: 30000
+    };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+
+    const response = await fetch(url, {
+      ...config,
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
     const status = response.status;
     
-    if (status === 200) {
-      console.log(`${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' })} 访问成功: ${url}`);
-      return status;
-    } else {
-      console.error(`访问失败: ${url}\n状态码: ${status}`);
-      await sendToTelegram(`保活日志\n\n访问失败: ${url}\n状态码: ${status}`);
-      return status;
-    }
+    return {
+      index,
+      url,
+      status,
+      success: status === 200,
+      timestamp: new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' })
+    };
     
   } catch (error) {
+    if (retryCount < 2) {
+      // 如果出错且重试次数小于2，等待后重试
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      return axiosLikeRequest(url, index, retryCount + 1);
+    }
     console.error(`访问出错: ${url}\n错误信息: ${error.message}`);
     await sendToTelegram(`保活日志\n\n访问出错: ${url}\n错误信息: ${error.message}`);
-    return 500;
+    return {
+      index,
+      url,
+      status: 500,
+      success: false,
+      timestamp: new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' })
+    };
   }
 }
 
@@ -79,12 +139,33 @@ async function handleScheduled() {
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' }));
   const hour = now.getHours();
 
-  // 24小时访问
-  await Promise.all(urls.map(url => visitUrl(url)));
+  // 24小时访问 - 并行执行但保持顺序
+  const results = await Promise.all(urls.map((url, index) => axiosLikeRequest(url, index)));
+  
+  // 按原始顺序排序并打印结果
+  results.sort((a, b) => a.index - b.index).forEach(result => {
+    if (result.success) {
+      console.log(`${result.timestamp} 访问成功: ${result.url}`);
+    } else {
+      const errorMessage = `保活日志\n访问失败: ${result.url}\n状态码: ${result.status}`;
+      console.error(errorMessage);
+      sendToTelegram(errorMessage);
+    }
+  });
 
   // 检查是否在暂停时间
   if (!isInPauseTime(hour)) {
-    await Promise.all(websites.map(url => visitUrl(url)));
+    const websiteResults = await Promise.all(websites.map((url, index) => axiosLikeRequest(url, index)));
+    
+    websiteResults.sort((a, b) => a.index - b.index).forEach(result => {
+      if (result.success) {
+        console.log(`${result.timestamp} 访问成功: ${result.url}`);
+      } else {
+        const errorMessage = `保活日志\n访问失败: ${result.url}\n状态码: ${result.status}`;
+        console.error(errorMessage);
+        sendToTelegram(errorMessage);
+      }
+    });
   } else {
     console.log(`当前处于暂停时间 1:00-5:00 --- ${now.toLocaleString()}`);
   }
