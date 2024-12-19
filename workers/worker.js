@@ -2,8 +2,8 @@
 // 在设置---触发事件 里设置访问频率，例如2分钟，保存即可，可开启日志查看，检查是否运行
 
 // Telegram配置(不需要可忽略)
-const TG_ID = '你的TG_ID';         // 替换为你的Telegram用户ID
-const TG_TOKEN = '<你的TG_TOKEN>'; // 替换为你的Telegram Bot的Token
+const TG_ID = '';           // 替换为你的Telegram用户ID
+const TG_TOKEN = '';        // 替换为你的Telegram Bot的Token
 
 // 24小时不间断访问的URL数组
 const urls = [            
@@ -50,16 +50,27 @@ async function sendToTelegram(message) {
 
 async function visitUrl(url) {
   try {
-    const response = await fetch(url);
-    console.log(`${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' })} 访问成功: ${url}`);
-    return response.status;
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8'
+      }
+    });
+    const status = response.status;
+    
+    if (status === 200) {
+      console.log(`${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' })} 访问成功: ${url}`);
+      return status;
+    } else {
+      console.error(`访问失败: ${url}\n状态码: ${status}`);
+      await sendToTelegram(`保活日志\n\n访问失败: ${url}\n状态码: ${status}`);
+      return status;
+    }
+    
   } catch (error) {
-    const errorMessage = `访问出错: ${url}\n错误信息: ${error.message}`;
-    console.error(errorMessage);
-
-    // 推送到Telegram
-    await sendToTelegram(errorMessage);
-
+    console.error(`访问出错: ${url}\n错误信息: ${error.message}`);
+    await sendToTelegram(`保活日志\n\n访问出错: ${url}\n错误信息: ${error.message}`);
     return 500;
   }
 }
