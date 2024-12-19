@@ -8,6 +8,9 @@
 2：在“设置”---”触发事件“菜单里设置访问频率，例如2分钟，保存即可，可开启日志查看是否运行，看下图
 ![image](https://github.com/user-attachments/assets/09e2474d-cf43-472e-a4ac-0df6504739e7)
 
+3：可以添加环境变量
+![PixPin_2024-12-19_18-16-11](https://github.com/user-attachments/assets/dbf1a840-55f5-4ed9-a662-8d3588a90431)
+
 
 
 
