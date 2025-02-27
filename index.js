@@ -1,8 +1,9 @@
 const axios = require('axios');
-const http = require('http');
-const cron = require('node-cron');
-const port = process.env.PORT || 7860;     
 const moment = require('moment-timezone');
+const http = require('http');
+const https = require('https');
+const cron = require('node-cron');
+const port = process.env.SERVER_PORT || process.env.PORT || 7860;
 
 // 添加24小时访问的URL数组
 const urls = [
@@ -27,10 +28,15 @@ function visitWebsites() {
     //添加更多的指定时间访问的URL
   ];
 
+// 忽略SSL证书验证的
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false
+});
+  
  // 遍历网页数组并发送请求
   websites.forEach(async (url) => {
     try {
-      const response = await axios.get(url);
+      const response = await axios.get(url, { httpsAgent });
       console.log(`${moment().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss')} Visited web successfully: ${url} - Status code: ${response.status}\n`);
     } catch (error) {
       console.error(`Error visiting ${url}: ${error.message}\n`);
@@ -76,7 +82,7 @@ runScript();
 // 24小时不间断访问
 async function scrapeAndLog(url) {
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, { httpsAgent });
     console.log(`${moment().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss')} Web visited Successfully: ${url} - Status code: ${response.status}\n`);
   } catch (error) {
     console.error(`${moment().tz('Asia/Hong_Kong').format('YYYY-MM-DD HH:mm:ss')}: Web visited Error: ${url}: ${error.message}\n`);
