@@ -18,6 +18,11 @@ const urls = [
   // 添加更多24小时不间断访问的URL
 ];
 
+// 忽略SSL证书验证
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false
+});
+
 // 添加在01:00至05:00暂停访问，其他时间正常访问的URL数组
 function visitWebsites() {
   const websites = [
@@ -27,11 +32,6 @@ function visitWebsites() {
     'https://www.google.com'         // 此处可备注名称，例如：Back4app，最后一个url后面没有逗号
     //添加更多的指定时间访问的URL
   ];
-
-// 忽略SSL证书验证的
-const httpsAgent = new https.Agent({
-  rejectUnauthorized: false
-});
   
  // 遍历网页数组并发送请求
   websites.forEach(async (url) => {
